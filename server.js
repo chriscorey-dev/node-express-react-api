@@ -2,11 +2,10 @@ const express = require("express");
 const path = require("path");
 const mysql = require("mysql");
 const app = express();
+
 const dbInfo = require("./dbInfo.json");
 
 app.use(express.static(path.join(__dirname, "build")));
-
-const SELECT_ALL_FILMS_QUERTY = "SELECT * FROM film";
 
 const conn = mysql.createConnection(dbInfo);
 conn.connect(err => {
@@ -15,57 +14,56 @@ conn.connect(err => {
   console.log(conn.state);
 });
 
-const users = [
-  {
-    id: 1,
-    name: "Bob"
-  },
-  {
-    id: 2,
-    name: "Jack"
-  },
-  {
-    id: 3,
-    name: "Jill"
-  }
-];
-
-// API get request before serving React
-app.get("/api/users", (req, res) => {
-  res.send(users);
-});
-
-app.get("/api/users/:id", (req, res) => {
-  const user = users.find(user => user.id === parseInt(req.params.id));
-  // 404 when bad id
-  if (!user) return notFound(res);
-
-  res.send(user);
-});
-
-// API get request before serving React
-app.get("/api/sakila/films", (req, res) => {
-  conn.query(SELECT_ALL_FILMS_QUERTY, (err, results) => {
-    if (err) {
-      return res.send(err);
-    } else return res.send(results);
-    // res.json({
-    //   data: results
-    // });
+app.get("/api/sakila", (req, res) => {
+  conn.query("SHOW TABLES", (err, results) => {
+    if (err) return res.send(err);
+    return res.send(results);
   });
 });
+
+app.get("/api/sakila/films", (req, res) => {
+  conn.query("SELECT * FROM film LIMIT 10", (err, results) => {
+    if (err) return res.send(err);
+    return res.send(results);
+  });
+});
+
+app.get("/api/sakila/films/:id", (req, res) => {
+  conn.query(
+    `SELECT * FROM film WHERE film_id = ${parseInt(req.params.id)}`,
+    (err, results) => {
+      if (err) return res.send(err);
+      return res.send(results);
+    }
+  );
+});
+
+function handle404(res) {
+  res.status(404).send(err => {
+    [
+      {
+        code: err.status,
+        error: true,
+        message: "Specified id was not found"
+        // data: {
+        //   id: "meta"
+        // }
+      }
+    ];
+  });
+}
 
 // Serving React
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "build/index.html"));
 });
 
-// // Port stuffs
-// const port = process.env.PORT || 3002;
-// app.listen(port, () => {
-//   console.log(`Listening on port ${port}...`);
-// });
+// Port stuffs
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Listening on port ${port}...`);
+});
 
-// function notFound(res) {
-//   res.status(404).send({ detail: "Not Found" });
-// }
+function notFound(res) {
+  res.status(404).send({ detail: "Not Found" });
+}
