@@ -1,6 +1,6 @@
-const express = require("express"); //Express to run our app
-const app = express(); //Initiate the app
-const path = require("path"); //Navigate to build folder
+const express = require("express");
+const path = require("path");
+const app = express();
 
 app.use(express.static(path.join(__dirname, "build")));
 
@@ -27,8 +27,7 @@ app.get("/api/users", (req, res) => {
 app.get("/api/users/:id", (req, res) => {
   const user = users.find(user => user.id === parseInt(req.params.id));
   // 404 when bad id
-  if (!user)
-    return res.status(404).send("The user with the given ID does not exist.");
+  if (!user) return notFound(res);
 
   res.send(user);
 });
@@ -41,5 +40,9 @@ app.get("*", (req, res) => {
 // Port stuffs
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log("Listening on port", port);
+  console.log(`Listening on port ${port}...`);
 });
+
+function notFound(res) {
+  res.status(404).send({ detail: "Not Found" });
+}

@@ -4,7 +4,8 @@
   "description": "Just desperately trying to get APIs to work.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
     "express": "^4.16.3"
