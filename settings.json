@@ -1,0 +1,9 @@
+{
+  "server": {
+    "path": "/api/sakila",
+    "database": "sakila",
+    "port": 3000,
+    "//": [{ "path": "/api/sakila" }, { "port": "/var/run/mysqld/mysqld.sock" }]
+  },
+  "database": {}
+}

@@ -1,17 +1,20 @@
 const express = require("express");
 const path = require("path");
 const mysql = require("mysql");
+
 const app = express();
 
 const dbInfo = require("./mysql-info.json");
+const settings = require("./settings.json");
 
-app.use(express.static(path.join(__dirname, "build")));
+// app.use(express.static(path.join(__dirname, "build")));
 
 const conn = mysql.createConnection(dbInfo);
+
 conn.connect(err => {
   if (err) return console.log(err);
-  console.log("connected as id " + conn.threadId);
-  console.log(conn.state);
+  // console.log("connected as id " + conn.threadId);
+  // console.log(conn.state);
 });
 
 app.get("/api/sakila", (req, res) => {
@@ -59,7 +62,7 @@ app.get("*", (req, res) => {
 });
 
 // Port stuffs
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || settings.server.port;
 app.listen(port, () => {
   console.log(`Listening on port ${port}...`);
 });
