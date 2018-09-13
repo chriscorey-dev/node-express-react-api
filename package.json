@@ -1,12 +1,19 @@
 {
-  "name": "BUILD-TEST",
+  "name": "build-test",
   "version": "1.0.0",
-  "description": "",
+  "description": "Just desperately trying to get APIs to work.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.16.3"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git@chris-corey.com:/srv/git/BUILD-TEST.git"
+  },
+  "author": "Chris Corey",
+  "license": "ISC"
 }
