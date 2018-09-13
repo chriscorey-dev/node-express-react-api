@@ -3,7 +3,7 @@ const path = require("path");
 const mysql = require("mysql");
 const app = express();
 
-const dbInfo = require("./dbInfo.json");
+const dbInfo = require("./mysql-info.json");
 
 app.use(express.static(path.join(__dirname, "build")));
 
