@@ -43,7 +43,10 @@ async function createAPI() {
       if (err) return err;
 
       // /api/{db}
-      app.get(settings.server.path, (req, res) => res.send(tables));
+      // app.get(settings.server.path, (req, res) => res.send(tables));
+      app.get(settings.server.path, (req, res) =>
+        res.send(tables.map(table => table[`Tables_in_${dbInfo.database}`]))
+      );
 
       // /api/sakila/{table} & /api/{db}/{table}/:id
       tables.forEach(table => {
