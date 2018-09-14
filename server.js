@@ -2,10 +2,10 @@ const express = require("express");
 const path = require("path");
 const mysql = require("mysql");
 
-const app = express();
-
 const dbInfo = require("./mysql-info.json");
 const settings = require("./settings.json");
+
+const app = express();
 
 // TODO: Make query parameter to limit amount of results
 // TODO: Make query parameter to sort (alphabetically? idk)
@@ -13,6 +13,8 @@ const settings = require("./settings.json");
 // TODO: CRUD stuff
 // TODO: ? Make runQuery function and make it asyncronous so it has to wait for it to stop
 // TODO: Don't wait for databases to query just to tell the app to go to reat GUI
+// TODO: Be able to make more database connections based on what's in settings.json
+// TODO: Handle tables w/ no primary key
 
 // Setting up urls
 app.use(express.static(path.join(__dirname, "build")));
@@ -46,15 +48,18 @@ async function createAPI() {
 
       // /api/sakila/{table} & /api/sakila/{table}/:id
       tables.forEach(table => {
-        conn.query(`SHOW COLUMNS IN ${table.Tables_in_sakila}`, (err, rows) => {
-          if (err) return err;
-          rows.find(
-            row =>
-              row.Extra === "auto_increment"
-                ? addURL(table.Tables_in_sakila, row.Field)
-                : null
-          );
-        });
+        conn.query(
+          `SHOW COLUMNS IN ${table[`Tables_in_${dbInfo.database}`]}`,
+          (err, rows) => {
+            if (err) return err;
+            rows.find(
+              row =>
+                row.Extra === "auto_increment"
+                  ? addURL(table[`Tables_in_${dbInfo.database}`], row.Field)
+                  : null
+            );
+          }
+        );
       });
     });
   });
