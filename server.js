@@ -14,7 +14,6 @@ const app = express();
 // TODO: ? Make runQuery function and make it asyncronous so it has to wait for it to stop
 // TODO: Don't wait for databases to query just to tell the app to go to reat GUI
 // TODO: Be able to make more database connections based on what's in settings.json
-// TODO: Handle tables w/ no primary key
 
 // Setting up urls
 app.use(express.static(path.join(__dirname, "build")));
@@ -43,23 +42,12 @@ async function createAPI() {
     conn.query("SHOW FULL TABLES WHERE Table_Type != 'VIEW'", (err, tables) => {
       if (err) return err;
 
-      // /api/sakila
+      // /api/{db}
       app.get(settings.server.path, (req, res) => res.send(tables));
 
-      // /api/sakila/{table} & /api/sakila/{table}/:id
+      // /api/sakila/{table} & /api/{db}/{table}/:id
       tables.forEach(table => {
-        conn.query(
-          `SHOW COLUMNS IN ${table[`Tables_in_${dbInfo.database}`]}`,
-          (err, rows) => {
-            if (err) return err;
-            rows.find(
-              row =>
-                row.Extra === "auto_increment"
-                  ? addURL(table[`Tables_in_${dbInfo.database}`], row.Field)
-                  : null
-            );
-          }
-        );
+        addURL(table[`Tables_in_${dbInfo.database}`]);
       });
     });
   });
@@ -67,19 +55,23 @@ async function createAPI() {
   return await new Promise((resolve, reject) => setTimeout(resolve, 500));
 }
 
-function addURL(table, id) {
+function addURL(table) {
   app.get(`${settings.server.path}/${table}`, (req, res) => {
-    conn.query(
-      `SELECT * FROM ${table}`,
-      (err, rows) => (err ? res.send(err) : res.send(rows))
-    );
+    console.log(`SELECT * FROM ${table}`);
+    conn.query(`SELECT * FROM ${table}`, (err, rows) => {
+      if (err) return res.send(err);
+      res.send(rows);
+    });
   });
 
   app.get(`${settings.server.path}/${table}/:id`, (req, res) => {
-    console.log(`SELECT * FROM ${table} WHERE ${id} = ${req.params.id}`);
     conn.query(
-      `SELECT * FROM ${table} WHERE ${id} = ${req.params.id}`,
-      (err, rows) => (err ? res.send(err) : res.send(rows[0]))
+      // `SELECT * FROM ${table} WHERE ID = 4079`, // This would be faster, but may change per database and harder to get.
+      `SELECT * FROM ${table} LIMIT 1 OFFSET ${parseInt(req.params.id) - 1}`,
+      (err, rows) => {
+        if (err) return res.send(err);
+        res.send(rows[0]);
+      }
     );
   });
 }
