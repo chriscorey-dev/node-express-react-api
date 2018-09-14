@@ -50,6 +50,7 @@ And global modules
 Create `mysql-info.json`
 
     $ echo '{"host": "localhost","user": "MYSQL_USER","password": "MYSQL_PASS","database":"DB_NAME","port": "/var/run/mysqld/mysqld.sock"}' > mysql-info.json
+    $ echo '{"server": {"path": "/api/DB_NAME","port": 3000}}' > settings.json
 
 ## Configure Server for Proxies
 

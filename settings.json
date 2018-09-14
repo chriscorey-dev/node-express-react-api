@@ -1,6 +1,0 @@
-{
-  "server": {
-    "path": "/api/world",
-    "port": 3000
-  }
-}
