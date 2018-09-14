@@ -6,21 +6,23 @@ const dbInfo = require("./mysql-info.json");
 const settings = require("./settings.json");
 
 const app = express();
-
-// TODO: Make query parameter to limit amount of results
-// TODO: Query parameter to count
-// TODO: Make query parameter to sort (alphabetically? idk)
-// TODO: Error handling. 404, 400.
-// TODO: CRUD stuff
-// TODO: ? Make runQuery function and make it asyncronous so it has to wait for it to stop
-// TODO: Don't wait for databases to query just to tell the app to go to reat GUI
-// TODO: Be able to make more database connections based on what's in settings.json
-// TODO: /api/ shows configured databases from settings.json
-
-// Setting up urls
+app.use(express.json());
 app.use(express.static(path.join(__dirname, "build")));
 
 const conn = mysql.createConnection(dbInfo);
+
+// Prioritized goals
+// TODO: CRUD stuff
+// TODO: Be able to make more database connections based on what's in settings.json
+// TODO: Error handling. 404, 400.
+// TODO: Don't wait for databases to query just to tell the app to go to reat GUI
+
+// TODO: /api/ shows configured databases from settings.json
+// TODO: Make Query parameter to count
+// TODO: Make query parameter to sort (alphabetically? idk)
+// TODO: Make query parameter to limit amount of results
+// TODO: ? Make runQuery function and make it asyncronous so it has to wait for it to stop
+// TODO: Configure server's git with www-data to give that user ownership
 
 (async () => {
   // Need to wait for API before deciding to make function or not
@@ -80,6 +82,7 @@ function addURL(table, idField) {
   });
 
   app.get(`${settings.server.path}/${table}/:id`, (req, res) => {
+    // app.get(`${settings.server.path}/:table/:id`, (req, res) => {    // TODO: LOOK INTO THIS
     const query = idField
       ? `SELECT * FROM ${table} WHERE ${idField} = ${req.params.id}`
       : `SELECT * FROM ${table} LIMIT 1 OFFSET ${parseInt(req.params.id) - 1}`;
@@ -87,14 +90,28 @@ function addURL(table, idField) {
   });
 
   app.put(`${settings.server.path}/${table}/:id`, (req, res) => {
-    conn.query(
-      `UPDATE film SET ${table} = 'ACADEMY DINOSAUR 2' WHERE ${idField} = 1 SELECT * FROM ${table} LIMIT 1 OFFSET ${parseInt(
-        req.params.id
-      ) - 1}`,
-      (err, rows) => {
-        if (err) return res.send(err);
-        res.send(rows[0]);
-      }
-    );
+    // TODO: Use Joi for validation
+    // if (!req.body) return res.status(400).send({ error: "badd sauce" });
+    // if (!prop)
+    //   return res.status(400).send({ error: `No field with name of ${prop}` });
+
+    const props = Object.keys(req.body);
+    props.forEach(prop => {
+      conn.query(
+        `UPDATE ${table} SET ${prop} = '${req.body[prop]}' WHERE ${idField} = ${
+          req.params.id
+        }`,
+        (err, rows) => {
+          if (err) return err;
+          // TODO: Return SELECT statement of modified field
+          // conn.query(
+          //   `SELECT * FROM ${table} WHERE ${idField} = ${req.params.id}`,
+          //   (err, rows) => {
+          // res.send(rows);
+          //   }
+          // );
+        }
+      );
+    });
   });
 }
