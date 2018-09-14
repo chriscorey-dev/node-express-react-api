@@ -4,7 +4,7 @@
   "description": "Just desperately trying to get APIs to work.",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "pm2 start server.js",
     "dev": "nodemon server.js"
   },
   "dependencies": {

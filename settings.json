@@ -1,7 +1,6 @@
 {
   "server": {
-    "path": "/api/sakila",
-    "port": 3000,
-    "//": [{ "path": "/api/sakila" }]
+    "path": "/api/world",
+    "port": 3000
   }
 }
