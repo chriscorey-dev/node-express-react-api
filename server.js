@@ -7,66 +7,74 @@ const app = express();
 const dbInfo = require("./mysql-info.json");
 const settings = require("./settings.json");
 
-// app.use(express.static(path.join(__dirname, "build")));
+// TODO: Make query parameter to limit amount of results
+// TODO: Make query parameter to sort (alphabetically? idk)
+// TODO: Error handling. 404, 400.
+// TODO: CRUD stuff
+// TODO: ? Make runQuery function and make it asyncronous so it has to wait for it to stop
+// TODO: Don't wait for databases to query just to tell the app to go to reat GUI
+
+// Setting up urls
+app.use(express.static(path.join(__dirname, "build")));
 
 const conn = mysql.createConnection(dbInfo);
 
-conn.connect(err => {
-  if (err) return console.log(err);
-  // console.log("connected as id " + conn.threadId);
-  // console.log(conn.state);
-});
+(async () => {
+  // Need to wait for API before deciding to make function or not
+  await createAPI();
 
-app.get("/api/sakila", (req, res) => {
-  conn.query("SHOW TABLES", (err, results) => {
-    if (err) return res.send(err);
-    return res.send(results);
+  // Serving React
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "build/index.html"));
   });
-});
-
-app.get("/api/sakila/films", (req, res) => {
-  conn.query("SELECT * FROM film LIMIT 10", (err, results) => {
-    if (err) return res.send(err);
-    return res.send(results);
+  // Port stuffs
+  const port = process.env.PORT || settings.server.port;
+  app.listen(port, () => {
+    console.log(`Listening on port ${port}...`);
   });
-});
+})();
 
-app.get("/api/sakila/films/:id", (req, res) => {
-  conn.query(
-    `SELECT * FROM film WHERE film_id = ${parseInt(req.params.id)}`,
-    (err, results) => {
-      if (err) return res.send(err);
-      return res.send(results);
-    }
-  );
-});
+// This does a lot of the work
+async function createAPI() {
+  conn.connect(err => {
+    if (err) return err;
+    conn.query("SHOW FULL TABLES WHERE Table_Type != 'VIEW'", (err, tables) => {
+      if (err) return err;
 
-function handle404(res) {
-  res.status(404).send(err => {
-    [
-      {
-        code: err.status,
-        error: true,
-        message: "Specified id was not found"
-        // data: {
-        //   id: "meta"
-        // }
-      }
-    ];
+      // /api/sakila
+      app.get(settings.server.path, (req, res) => res.send(tables));
+
+      // /api/sakila/{table} & /api/sakila/{table}/:id
+      tables.forEach(table => {
+        conn.query(`SHOW COLUMNS IN ${table.Tables_in_sakila}`, (err, rows) => {
+          if (err) return err;
+          rows.find(
+            row =>
+              row.Extra === "auto_increment"
+                ? addURL(table.Tables_in_sakila, row.Field)
+                : null
+          );
+        });
+      });
+    });
   });
+  // Can this be done better?
+  return await new Promise((resolve, reject) => setTimeout(resolve, 500));
 }
 
-// Serving React
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "build/index.html"));
-});
+function addURL(table, id) {
+  app.get(`${settings.server.path}/${table}`, (req, res) => {
+    conn.query(
+      `SELECT * FROM ${table}`,
+      (err, rows) => (err ? res.send(err) : res.send(rows))
+    );
+  });
 
-// Port stuffs
-const port = process.env.PORT || settings.server.port;
-app.listen(port, () => {
-  console.log(`Listening on port ${port}...`);
-});
-
-function notFound(res) {
-  res.status(404).send({ detail: "Not Found" });
+  app.get(`${settings.server.path}/${table}/:id`, (req, res) => {
+    console.log(`SELECT * FROM ${table} WHERE ${id} = ${req.params.id}`);
+    conn.query(
+      `SELECT * FROM ${table} WHERE ${id} = ${req.params.id}`,
+      (err, rows) => (err ? res.send(err) : res.send(rows[0]))
+    );
+  });
 }
