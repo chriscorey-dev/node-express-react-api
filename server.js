@@ -26,6 +26,17 @@ const conn = mysql.createConnection(dbInfo);
 
 (async () => {
   // Need to wait for API before deciding to make function or not
+
+  // /api/  -  Lists dbs
+  // app.get(settings.path, (req, res) =>
+  app.get("/api", (req, res) =>
+    res.send(
+      settings.server.databases.map(database => {
+        const db = require(database.mysqlInfo);
+        return db.database;
+      })
+    )
+  );
   await createAPI();
 
   // Serving React
@@ -43,10 +54,11 @@ const conn = mysql.createConnection(dbInfo);
 async function createAPI() {
   conn.connect(err => {
     if (err) return err;
+
     conn.query("SHOW FULL TABLES WHERE Table_Type != 'VIEW'", (err, tables) => {
       if (err) return err;
 
-      // /api/{db}
+      // /api/{db}  -  Lists tables in db
       app.get(settings.server.path, (req, res) =>
         res.send(tables.map(table => table[`Tables_in_${dbInfo.database}`]))
       );
