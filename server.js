@@ -16,9 +16,9 @@ const conn = mysql.createConnection(dbInfo);
 // TODO: Be able to make more database connections based on what's in settings.json
 // TODO: Error handling. 404, 400.
 // TODO: Don't wait for databases to query just to tell the app to go to reat GUI
+// TODO: React's caching is poo in Chrome
 
-// TODO: /api/ shows configured databases from settings.json
-// TODO: Make Query parameter to count
+// TODO: Make query parameter to count
 // TODO: Make query parameter to sort (alphabetically? idk)
 // TODO: Make query parameter to limit amount of results
 // TODO: ? Make runQuery function and make it asyncronous so it has to wait for it to stop
@@ -41,7 +41,7 @@ const conn = mysql.createConnection(dbInfo);
 
   // Serving React
   app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "build/index.html"));
+    res.sendFile(path.join(__dirname, "build", "index.html"));
   });
   // Port stuffs
   const port = process.env.PORT || settings.server.port;

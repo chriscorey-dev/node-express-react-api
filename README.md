@@ -16,6 +16,10 @@ I think this is going to be designed on top of any built react app. Just need to
 
 # RESTful API Template
 
+## Ready-to-use Percentage:
+
+50%
+
 ## Setup
 
 Make sure you install this on the same directory of the `build` (Folder that's the result of running `npm run build`). It just sits on top of it and leaves your react project untouched.
@@ -93,3 +97,7 @@ Now you can run the server through pm2 if you want. It will allow for easy resta
 This project allows a RESTful API to sit on top of any react project you build.
 
 In its current state, it points to the [sakila example database](https://dev.mysql.com/doc/sakila/en/). I'd like to build this project out so it can build out for any database's needs.
+
+## Current Issues:
+
+When using create-react-app, registerServiceWorker.js can make this project dysfunctional when you go to the desired urls in a browser (particularly chrome). I plan on fixing this issue in the future, but in the mean time you can disable registerServiceWorker in your react project by commenting it out in the src/index.js file. Then the API urls will work with a **cache refresh** in your browser.
