@@ -12,7 +12,9 @@ app.use(express.static(path.join(__dirname, "build")));
 const conn = mysql.createConnection(dbInfo);
 
 // Prioritized goals
+// TODO: Make into NPM package
 // TODO: CRUD stuff
+// TODO: Authentication/ authorization on CRUD operations
 // TODO: Be able to make more database connections based on what's in settings.json
 // TODO: Error handling. 404, 400.
 // TODO: Don't wait for databases to query just to tell the app to go to reat GUI
@@ -95,6 +97,8 @@ function addURL(table, idField) {
 
   app.get(`${settings.server.path}/${table}/:id`, (req, res) => {
     // app.get(`${settings.server.path}/:table/:id`, (req, res) => {    // TODO: LOOK INTO THIS
+
+    // If an ID Field was identified, it will GET that. Else it'll GET what's at the row index
     const query = idField
       ? `SELECT * FROM ${table} WHERE ${idField} = ${req.params.id}`
       : `SELECT * FROM ${table} LIMIT 1 OFFSET ${parseInt(req.params.id) - 1}`;
@@ -114,16 +118,26 @@ function addURL(table, idField) {
           req.params.id
         }`,
         (err, rows) => {
-          if (err) return err;
-          // TODO: Return SELECT statement of modified field
-          // conn.query(
-          //   `SELECT * FROM ${table} WHERE ${idField} = ${req.params.id}`,
-          //   (err, rows) => {
-          // res.send(rows);
-          //   }
-          // );
+          if (err) return res.send(err);
+
+          // Return GET Request of modified data
+          const query = idField
+            ? `SELECT * FROM ${table} WHERE ${idField} = ${req.params.id}`
+            : `SELECT * FROM ${table} LIMIT 1 OFFSET ${parseInt(req.params.id) -
+                1}`;
+          conn.query(
+            query,
+            (err, rows) => (err ? res.send(err) : res.send(rows[0]))
+          );
         }
       );
     });
   });
 }
+
+// 404
+// {
+//   "statusCode": 404,
+//   "error": "Not Found",
+//   "message": "No endpoint found that matches '/v2/beers//1'"
+//   }
