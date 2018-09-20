@@ -2,14 +2,11 @@ const express = require("express");
 const path = require("path");
 const mysql = require("mysql");
 
-const dbInfo = require("./mysql-info.json");
 const settings = require("./settings.json");
 
 const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "build")));
-
-// const conn = mysql.createConnection(dbInfo);
 
 // Prioritized goals
 // TODO: Make into NPM package
@@ -17,10 +14,10 @@ app.use(express.static(path.join(__dirname, "build")));
 // TODO: Currently getting first primary key and only filtering by that.
 //       In the future I'd like to use referenced schemas to automatically do everything.
 // TODO: Authentication/ authorization on CRUD operations
-// TODO: Be able to make more database connections based on what's in settings.json
 // TODO: Error handling. 400, 500?.
 // TODO: Don't wait for databases to query just to tell the app to go to reat GUI
 // TODO: React's caching is poo in Chrome
+// TODO: Specify path name for project. Doesn't only have to be react.
 
 // TODO: Query parameters to count
 //       sort (alphabetically? idk)
@@ -54,12 +51,7 @@ class Database {
 
   // /api/  -  Lists dbs
   app.get("/api", (req, res) =>
-    res.send(
-      settings.server.databases.map(database => {
-        const db = require(database.mysqlInfo);
-        return db.database;
-      })
-    )
+    res.send(settings.server.databases.map(db => db.database))
   );
 
   await createAPI();
@@ -78,15 +70,15 @@ class Database {
 
 // Creating the API
 async function createAPI() {
-  settings.server.databases.forEach(db => {
-    const mysqlInfo = require(db.mysqlInfo);
+  // Runs through each databases specified in mysql-info.json
+  settings.server.databases.forEach(mysqlInfo => {
     const database = new Database(mysqlInfo);
 
     database
       .query("SHOW FULL TABLES WHERE Table_Type != 'VIEW'")
       .then(tables => {
         // /api/{db}  -  Lists tables in db
-        app.get(`${path}/${mysqlInfo.database}`, (req, res) =>
+        app.get(`${settings.server.path}/${mysqlInfo.database}`, (req, res) =>
           res.send(
             tables.map(table => table[`Tables_in_${mysqlInfo.database}`])
           )

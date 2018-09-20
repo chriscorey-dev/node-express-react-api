@@ -1,12 +1,8 @@
 {
-  "name": "build-test",
+  "name": "public-api-template",
   "version": "1.0.0",
-  "description": "Just desperately trying to get APIs to work.",
+  "description": "Adds a public REST API to a react project",
   "main": "server.js",
-  "scripts": {
-    "start": "pm2 start server.js",
-    "dev": "nodemon server.js"
-  },
   "dependencies": {
     "express": "^4.16.3",
     "mysql": "^2.16.0"

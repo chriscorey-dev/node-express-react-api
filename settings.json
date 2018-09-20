@@ -1,0 +1,22 @@
+{
+  "server": {
+    "databases": [
+      {
+        "host": "localhost",
+        "user": "root",
+        "password": "root",
+        "database": "DB_NAME_01",
+        "port": "3306"
+      },
+      {
+        "host": "localhost",
+        "user": "root",
+        "password": "root",
+        "database": "DB_NAME_02",
+        "port": "3306"
+      }
+    ],
+    "path": "/path/to/my/api",
+    "port": 3000
+  }
+}
