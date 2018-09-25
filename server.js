@@ -42,7 +42,6 @@ class Database {
     return new Promise((resolve, reject) => {
       this.connection.end(err => {
         if (err) return reject(err);
-        console.log("connection closed");
         resolve();
       });
     });
@@ -109,10 +108,7 @@ function addURL(tableName, pkField, database, mysqlInfo) {
   app.get(
     `${settings.server.path}/${mysqlInfo.database}/${tableName}`,
     (req, res) => {
-      database
-        .query(`SELECT * FROM ${tableName}`)
-        .then(database.close())
-        .then(rows => res.send(rows));
+      database.query(`SELECT * FROM ${tableName}`).then(rows => res.send(rows));
     }
   );
 
@@ -124,7 +120,6 @@ function addURL(tableName, pkField, database, mysqlInfo) {
         .query(
           `SELECT * FROM ${tableName} WHERE ${pkField} = '${req.params.id}'`
         )
-        .then(database.close())
         .then(rows => {
           if (rows.length === 0) return NotFound;
           return rows[0];
@@ -155,7 +150,6 @@ function addURL(tableName, pkField, database, mysqlInfo) {
               req.body[prop]
             }' WHERE ${pkField} = '${req.params.id}'`
           )
-          .then(database.close())
           .then(
             database
               .query(
@@ -163,7 +157,6 @@ function addURL(tableName, pkField, database, mysqlInfo) {
                   req.params.id
                 }'`
               )
-              .then(database.close())
               .then(rows => res.send(rows[0]))
           );
       });
