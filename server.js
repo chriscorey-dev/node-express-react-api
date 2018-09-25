@@ -9,6 +9,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "build")));
 
 // Prioritized goals
+// TODO: FIX MEMORY LEAK :D
 // TODO: Make into NPM package
 // TODO: CRUD stuff
 // TODO: Currently getting first primary key and only filtering by that.
@@ -18,6 +19,7 @@ app.use(express.static(path.join(__dirname, "build")));
 // TODO: Don't wait for databases to query just to tell the app to go to reat GUI
 // TODO: React's caching is poo in Chrome
 // TODO: Specify path name for project. Doesn't only have to be react.
+// TODO: Blacklist tables defined in settings.json
 
 // TODO: Query parameters to count
 //       sort (alphabetically? idk)
@@ -40,6 +42,7 @@ class Database {
     return new Promise((resolve, reject) => {
       this.connection.end(err => {
         if (err) return reject(err);
+        console.log("connection closed");
         resolve();
       });
     });
@@ -47,8 +50,6 @@ class Database {
 }
 
 (async () => {
-  // Need to wait for API before deciding to make function or not
-
   // /api/  -  Lists dbs
   app.get("/api", (req, res) =>
     res.send(settings.server.databases.map(db => db.database))
@@ -84,7 +85,7 @@ async function createAPI() {
           )
         );
 
-        // /api/{db}/{table} & /api/{db}/{table}/:id
+        // /{path}/{db}/{table} & /{path}/{db}/{table}/:id
         tables.forEach(table => {
           const tableName = table[`Tables_in_${mysqlInfo.database}`];
 
@@ -104,13 +105,18 @@ async function createAPI() {
 
 function addURL(tableName, pkField, database, mysqlInfo) {
   // GET
+  // /{path}/{db}/{table}
   app.get(
     `${settings.server.path}/${mysqlInfo.database}/${tableName}`,
     (req, res) => {
-      database.query(`SELECT * FROM ${tableName}`).then(rows => res.send(rows));
+      database
+        .query(`SELECT * FROM ${tableName}`)
+        .then(database.close())
+        .then(rows => res.send(rows));
     }
   );
 
+  // /{path}/{db}/{table}/:id
   app.get(
     `${settings.server.path}/${mysqlInfo.database}/${tableName}/:id`,
     (req, res) => {
@@ -118,6 +124,7 @@ function addURL(tableName, pkField, database, mysqlInfo) {
         .query(
           `SELECT * FROM ${tableName} WHERE ${pkField} = '${req.params.id}'`
         )
+        .then(database.close())
         .then(rows => {
           if (rows.length === 0) return NotFound;
           return rows[0];
@@ -148,6 +155,7 @@ function addURL(tableName, pkField, database, mysqlInfo) {
               req.body[prop]
             }' WHERE ${pkField} = '${req.params.id}'`
           )
+          .then(database.close())
           .then(
             database
               .query(
@@ -155,6 +163,7 @@ function addURL(tableName, pkField, database, mysqlInfo) {
                   req.params.id
                 }'`
               )
+              .then(database.close())
               .then(rows => res.send(rows[0]))
           );
       });
