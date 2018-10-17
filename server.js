@@ -1,10 +1,12 @@
 const express = require("express");
 const path = require("path");
 const mysql = require("mysql");
+const cors = require("cors");
 
 const settings = require("./settings.json");
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "build")));
 
@@ -20,6 +22,7 @@ app.use(express.static(path.join(__dirname, "build")));
 // TODO: React's caching is poo in Chrome
 // TODO: Specify path name for project. Doesn't only have to be react.
 // TODO: Blacklist tables defined in settings.json
+// TODO: Create restrictions to prevent spamming
 
 // TODO: Query parameters to count
 //       sort (alphabetically? idk)
