@@ -144,25 +144,22 @@ function addURL(tableName, pkField, database, mysqlInfo) {
       //       Can't be null when !NULL.
 
       // TODO: Use Joi for validation
-      // // Checking if body is valid:
+      // Checking if body is valid
 
       props.forEach(prop => {
-        database
-          .query(
-            `UPDATE ${tableName} SET ${prop} = '${
-              req.body[prop]
-            }' WHERE ${pkField} = '${req.params.id}'`
-          )
-          .then(
-            database
-              .query(
-                `SELECT * FROM ${tableName} WHERE ${pkField} = '${
-                  req.params.id
-                }'`
-              )
-              .then(rows => res.send(rows[0]))
-          );
+        database.query(
+          `UPDATE ${tableName} SET ${prop} = '${
+            req.body[prop]
+          }' WHERE ${pkField} = '${req.params.id}'`
+        );
       });
+      //   .then(
+      database
+        .query(
+          `SELECT * FROM ${tableName} WHERE ${pkField} = '${req.params.id}'`
+        )
+        .then(rows => res.send(rows[0]));
+      // );
     }
   );
 }
